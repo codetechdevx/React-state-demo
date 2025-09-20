@@ -13,12 +13,24 @@ function App() {
 
   const addTask = () => {
     if (taskInput.trim() === "") return;
-    setTasks([...tasks, taskInput]); 
-    setTaskInput("");
+
+    fetch("http://localhost:5000/api/tasks", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text: taskInput }),
+    })
+    .then(res => res.json())
+    .then(newTask => {
+      setTasks([...tasks, newTask]);
+      setTaskInput("");
+    });
   };
 
-  const removeTask = (index) => {
-    setTasks(tasks.filter((_, i) => i !== index));
+  const removeTask = (id) => {
+  fetch(`http://localhost:5000/api/tasks/${id}`, { method: "DELETE" })
+    .then(() => {
+      setTasks(tasks.filter(task => task._id !== id));
+    });
   };
 
   const handleFormChange = (e) => {
@@ -35,7 +47,6 @@ function App() {
     setForm({ name: "", email: "" });
     setSubmitted(null);
   };
-
  
   useEffect(() => {
     fetch("http://localhost:5000/api/message")
@@ -43,6 +54,13 @@ function App() {
       .then((data) => setMessage(data.message))
       .catch((err) => console.error("Error fetching message:", err));
   }, []); 
+
+  useEffect(() => {
+  fetch("http://localhost:5000/api/tasks")
+    .then((res) => res.json())
+    .then((data) => setTasks(data))
+    .catch((err) => console.error("Error fetching tasks:", err));
+  }, []);
 
   return (
     <div style={{ textAlign: "center", marginTop: "50px" }}>
@@ -122,11 +140,11 @@ function App() {
         {tasks.length === 0 ? (
           <li>No tasks yet</li>
         ) : (
-          tasks.map((task, index) => (
-            <li key={index} style={{ marginBottom: "6px" }}>
-              {task}
+          tasks.map((task) => (
+            <li key={task._id} style={{ marginBottom: "6px" }}>
+              {task.text}
               <button
-                onClick={() => removeTask(index)}
+                onClick={() => removeTask(task._id)}
                 style={{ marginLeft: "10px" }}
               >
                 Delete
@@ -135,6 +153,8 @@ function App() {
           ))
         )}
       </ul>
+
+
     </div>
     
   );
