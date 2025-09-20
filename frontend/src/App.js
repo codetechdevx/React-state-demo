@@ -4,10 +4,22 @@ function App() {
   const [count, setCount] = useState(0);
   const [text, setText] = useState("");
   const [message, setMessage] = useState("");
-  
-  // Form state
+
   const [form, setForm] = useState({ name: "", email: "" });
   const [submitted, setSubmitted] = useState(null);
+
+  const [tasks, setTasks] = useState([]);
+  const [taskInput, setTaskInput] = useState("");
+
+  const addTask = () => {
+    if (taskInput.trim() === "") return;
+    setTasks([...tasks, taskInput]); 
+    setTaskInput("");
+  };
+
+  const removeTask = (index) => {
+    setTasks(tasks.filter((_, i) => i !== index));
+  };
 
   const handleFormChange = (e) => {
     const { name, value } = e.target;
@@ -24,6 +36,7 @@ function App() {
     setSubmitted(null);
   };
 
+ 
   useEffect(() => {
     fetch("http://localhost:5000/api/message")
       .then((res) => res.json())
@@ -93,6 +106,35 @@ function App() {
         </p>
       )}
 
+      <h2 style={{ marginTop: "30px" }}>To-Do List Example</h2>
+
+      <div style={{ marginBottom: "10px" }}>
+        <input
+          type="text"
+          value={taskInput}
+          onChange={(e) => setTaskInput(e.target.value)}
+          placeholder="Enter a task..."
+        />
+        <button onClick={addTask} style={{ marginLeft: "8px" }}>Add Task</button>
+      </div>
+
+      <ul style={{ listStyleType: "none", padding: 0 }}>
+        {tasks.length === 0 ? (
+          <li>No tasks yet</li>
+        ) : (
+          tasks.map((task, index) => (
+            <li key={index} style={{ marginBottom: "6px" }}>
+              {task}
+              <button
+                onClick={() => removeTask(index)}
+                style={{ marginLeft: "10px" }}
+              >
+                Delete
+              </button>
+            </li>
+          ))
+        )}
+      </ul>
     </div>
     
   );
